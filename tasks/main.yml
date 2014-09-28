@@ -19,7 +19,7 @@
 - name: "Init /home/{{ user }}/.bashrc"
   sudo: yes
   sudo_user: "{{ user }}"
-  lineinfile: dest='/home/{{ user }}/.bashrc' line='source ~/perl5/perlbrew/etc/'
+  lineinfile: dest='/home/{{ user }}/.bashrc' line='source ~/perl5/perlbrew/etc/bashrc'
   tags: [ perlbrew, config ]
 
 - name: "Install Perl {{ perl_version }}"
