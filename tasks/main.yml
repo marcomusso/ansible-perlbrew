@@ -1,0 +1,41 @@
+---
+- name: Package prerequisites
+  apt: name="{{ item }}" state=present
+  with_items:
+  - make
+  - gcc
+  - curl
+  - perl-doc
+  - libmodule-build-perl
+  - perlbrew
+  tags: [ perlbrew, prereq ]
+
+- name: "Init for {{ user }}"
+  sudo: yes
+  sudo_user: "{{ user }}"
+  shell: perlbrew init creates='/home/{{ user }}/perl5/perlbrew'
+  tags: [ perlbrew, config ]
+
+- name: "Init /home/{{ user }}/.bashrc"
+  sudo: yes
+  sudo_user: "{{ user }}"
+  lineinfile: dest='/home/{{ user }}/.bashrc' line='source ~/perl5/perlbrew/etc/'
+  tags: [ perlbrew, config ]
+
+- name: "Install Perl {{ perl_version }}"
+  sudo: yes
+  sudo_user: "{{ user }}"
+  shell: perlbrew install --verbose {{ perl_version }} creates='/home/{{ user }}/perl5/perlbrew/perls/{{ perl_version }}'
+  tags: [ perlbrew, install ]
+
+- name: Install cpanm
+  sudo: yes
+  sudo_user: "{{ user }}"
+  shell: perlbrew install-cpanm creates='/home/{{ user }}/perl5/perlbrew/bin/cpanm'
+  tags: [ perlbrew, install ]
+
+- name: "Use Perl {{ perl_version }}"
+  sudo: yes
+  sudo_user: "{{ user }}"
+  shell: PERLBREW_BASHRC_VERSION=1 perlbrew switch {{ perl_version }}
+  tags: [ perlbrew, install ]
