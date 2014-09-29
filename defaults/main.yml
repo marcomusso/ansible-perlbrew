@@ -1,3 +1,4 @@
 ---
+perlbrew_root: /home/{{ user }}/perl5/perlbrew
 perl_version: perl-5.20.1
 user: www
