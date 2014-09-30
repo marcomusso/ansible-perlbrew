@@ -7,25 +7,29 @@
   - curl
   - perl-doc
   - libmodule-build-perl
-  - perlbrew
   tags: [ perlbrew, prereq ]
+  when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+
 
 - name: 'Make PERLBREW_ROOT'
   file: path='{{ perlbrew_root }}' owner='{{ user }}' mode=0755 state=directory
 
+- name: Download perlbrew
+  get_url: url={{ perlbrew_install_url }} dest={{perlbrew_root}}/perlbrew_install
+
 - name: Init for {{ user }}
   sudo: yes
   sudo_user: '{{ user }}'
-  shell: PERLBREW_ROOT='{{ perlbrew_root }}' perlbrew init creates='{{ perlbrew_root }}'
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' {{perlbrew_root}}/perlbrew_install init creates='{{ perlbrew_root }}/bin/perlbrew'
   tags: [ perlbrew, config ]
 
-- name: Init /home/{{ user }}/.bashrc
+- name: Init ~/.bashrc
   sudo: yes
   sudo_user: '{{ user }}'
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
-  - { dest: '/home/{{ user }}/.bashrc', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
-  - { dest: '/home/{{ user }}/.bashrc', line: 'source {{ perlbrew_root }}/etc/bashrc' }
+  - { dest: '~/.bashrc', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
+  - { dest: '~/.bashrc', line: 'source {{ perlbrew_root }}/etc/bashrc' }
   tags: [ perlbrew, config ]
 
 - name: Install Perl
