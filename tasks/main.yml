@@ -25,7 +25,7 @@
   tags: [ perlbrew, install ]
 
 - name: Init ~/.bashrc
-  sudo: yes
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ user }}'
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
@@ -34,19 +34,19 @@
   tags: [ perlbrew, config ]
 
 - name: Install Perl
-  sudo: yes
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ user }}'
   shell: PERLBREW_ROOT='{{ perlbrew_root }}' perlbrew install --verbose {{ perl_version }} creates='{{ perlbrew_root }}/perls/{{ perl_version }}'
   tags: [ perlbrew, install ]
 
 - name: Install cpanm
-  sudo: yes
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ user }}'
   shell: perlbrew install-cpanm creates='{{ perlbrew_root }}/bin/cpanm'
   tags: [ perlbrew, install ]
 
 - name: Use Perl {{ perl_version }}
-  sudo: yes
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ user }}'
   shell: PERLBREW_BASHRC_VERSION=1 perlbrew switch {{ perl_version }}
   tags: [ perlbrew, install ]
