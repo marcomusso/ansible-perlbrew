@@ -2,17 +2,15 @@
 - name: Package prerequisites
   apt: name='{{ item }}' state=present
   with_items:
-  - make
-  - gcc
   - curl
-  - perl-doc
-  - libmodule-build-perl
-  tags: [ perlbrew, prereq ]
+  - gcc
+  - make
+  tags: [ perlbrew, apt ]
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-
-- name: 'Make PERLBREW_ROOT'
+- name: Make PERLBREW_ROOT
   file: path='{{ perlbrew_root }}' owner='{{ user }}' mode=0755 state=directory
+  tags: [ perlbrew, install ]
 
 - name: Download perlbrew install script
   get_url: url=https://gugod.github.io/App-perlbrew/perlbrew dest=/tmp/perlbrew-installer-{{ user }} mode=0755
