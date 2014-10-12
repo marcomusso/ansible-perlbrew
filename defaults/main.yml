@@ -1,5 +1,4 @@
 ---
 user: www
 perl_version: perl-5.20.1
-perlbrew_root: ~/perl5/perlbrew
-perlbrew_install_url: https://raw.githubusercontent.com/gugod/App-perlbrew/master/perlbrew-install
+perlbrew_root: /home/{{ user }}/perl5/perlbrew

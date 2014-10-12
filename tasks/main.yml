@@ -14,14 +14,17 @@
 - name: 'Make PERLBREW_ROOT'
   file: path='{{ perlbrew_root }}' owner='{{ user }}' mode=0755 state=directory
 
-- name: Download perlbrew
-  get_url: url={{ perlbrew_install_url }} dest={{perlbrew_root}}/perlbrew_install
+- name: Download perlbrew install script
+  get_url: url=https://gugod.github.io/App-perlbrew/perlbrew dest=/tmp/perlbrew-installer-{{ user }} mode=0755
+  tags: [ perlbrew, install ]
 
-- name: Init for {{ user }}
-  sudo: yes
-  sudo_user: '{{ user }}'
-  shell: PERLBREW_ROOT='{{ perlbrew_root }}' {{perlbrew_root}}/perlbrew_install init creates='{{ perlbrew_root }}/bin/perlbrew'
-  tags: [ perlbrew, config ]
+- name: Install perlbrew
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ user }} self-install creates='{{ perlbrew_root }}/bin/perlbrew'
+  tags: [ perlbrew, install ]
+
+- name: Install patchperl
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ user }} -f -q install-patchperl creates='{{ perlbrew_root }}/bin/patchperl'
+  tags: [ perlbrew, install ]
 
 - name: Init ~/.bashrc
   sudo: yes
