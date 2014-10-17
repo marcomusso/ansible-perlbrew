@@ -17,6 +17,7 @@
   - curl
   - gcc
   - make
+  - bzip2
   - perl
   when: ansible_distribution == 'CentOS' 
 
@@ -31,12 +32,12 @@
 - name: Install perlbrew
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
-  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} self-install creates='{{ perlbrew_root }}/bin/perlbrew'
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} self-install creates="{{ perlbrew_root }}/bin/perlbrew"
   register: install_perlbrew
   tags: [ perlbrew ]
 
-- - name: Install patchperl
-  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} -f -q install-patchperl creates='{{ perlbrew_root }}/bin/patchperl'
+- name: Install patchperl
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} -f -q install-patchperl creates="{{ perlbrew_root }}/bin/patchperl"
   tags: [ perlbrew ]
 
 - set_fact:
