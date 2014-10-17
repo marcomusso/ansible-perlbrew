@@ -59,8 +59,12 @@
 - name: Install Perl
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
-  shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }} creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
+  shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }}  # creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
+  register: perlbrew_build_output
   tags: [ perlbrew ]
+
+- fail: msg="Perlbrew could not build Perl. Check the build log"
+  when: "perlbrew_build_output.changed == True and  perl_version + ' is successfully installed.' not in perlbrew_build_output.stdout_lines"
 
 - name: Install cpanm
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
