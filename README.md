@@ -17,14 +17,15 @@ Role Variables
 * "perl_version" is used to specify the default perl version. Note: This
   cannot be "latest", but need to be something like "perl-5.20.1". The default
   will be changed to the latest stable.
-* "user" is used to specify which user on the remote system that will get
+* "perlbrew_user" is used to specify which user on the remote system that will 
+  get
   "perlbrew".
 
 Example:
 
     ---
     perl_version: perl-5.20.1
-    user: www
+    perlbrew_user: www
 
 Dependencies
 ------------

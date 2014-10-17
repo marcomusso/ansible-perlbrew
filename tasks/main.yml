@@ -5,52 +5,70 @@
   - curl
   - gcc
   - make
-  tags: [ perlbrew ]
+  - perl-doc
+  - libmodule-build-perl
+  - perlbrew
+  tags: [ perlbrew, prereq ]
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
+    
+
+- yum: name='{{ item }}' state=present
+  with_items:
+  - curl
+  - gcc
+  - make
+  - perl
+  when: ansible_distribution == 'CentOS' 
 
 - name: Make PERLBREW_ROOT
-  file: path='{{ perlbrew_root }}' owner='{{ user }}' mode=0755 state=directory
+  file: path='{{ perlbrew_root }}' owner='{{ perlbrew_user }}' mode=0755 state=directory
   tags: [ perlbrew ]
 
 - name: Download perlbrew install script
-  get_url: url=https://gugod.github.io/App-perlbrew/perlbrew dest=/tmp/perlbrew-installer-{{ user }} mode=0755
+  get_url: url=https://gugod.github.io/App-perlbrew/perlbrew dest=/tmp/perlbrew-installer-{{ perlbrew_user }} mode=0755
   tags: [ perlbrew ]
 
 - name: Install perlbrew
-  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ user }} self-install creates='{{ perlbrew_root }}/bin/perlbrew'
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
+  sudo_user: '{{ perlbrew_user }}'
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} self-install creates='{{ perlbrew_root }}/bin/perlbrew'
+  register: install_perlbrew
   tags: [ perlbrew ]
 
-- name: Install patchperl
-  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ user }} -f -q install-patchperl creates='{{ perlbrew_root }}/bin/patchperl'
+- - name: Install patchperl
+  shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} -f -q install-patchperl creates='{{ perlbrew_root }}/bin/patchperl'
   tags: [ perlbrew ]
 
 - set_fact:
     perlbrew_bin: PERLBREW_ROOT={{ perlbrew_root }} {{ perlbrew_root}}/bin/perlbrew
   tags: [ perlbrew ]
 
+- name: Make sure .profile exists
+  file: path=~{{ perlbrew_user }}/.profile state=touch owner={{ perlbrew_user }} mode=0644
+
 - name: Init ~/.bashrc
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
-  sudo_user: '{{ user }}'
+  sudo_user: '{{ perlbrew_user }}'
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
-  - { dest: '/home/{{ user }}/.profile', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
-  - { dest: '/home/{{ user }}/.profile', line: 'source {{ perlbrew_root }}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.profile', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
+  - { dest: '~{{ perlbrew_user }}/.profile', line: 'source {{ perlbrew_root }}/etc/bashrc' }
   tags: [ perlbrew ]
 
 - name: Install Perl
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
-  sudo_user: '{{ user }}'
+  sudo_user: '{{ perlbrew_user }}'
   shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }} creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
   tags: [ perlbrew ]
 
 - name: Install cpanm
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
-  sudo_user: '{{ user }}'
+  sudo_user: '{{ perlbrew_user }}'
   shell: "{{ perlbrew_bin }} install-cpanm creates='{{ perlbrew_root }}/bin/cpanm'"
   tags: [ perlbrew ]
 
 - name: Use Perl {{ perl_version }}
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
-  sudo_user: '{{ user }}'
+  sudo_user: '{{ perlbrew_user }}'
   shell: PERLBREW_BASHRC_VERSION=1 {{ perlbrew_bin }} switch {{ perl_version }}
   tags: [ perlbrew ]
