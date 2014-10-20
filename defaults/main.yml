@@ -2,3 +2,4 @@
 perlbrew_user: www
 perl_version: perl-5.20.1
 perlbrew_root: ~/perl5/perlbrew
+perlbrew_skip_tests: false
