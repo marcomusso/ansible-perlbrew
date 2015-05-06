@@ -1,4 +1,8 @@
 ---
 perlbrew_user: www
-perl_version: perl-5.20.1
+perl_version: perl-5.20.2
 perlbrew_root: ~/perl5/perlbrew
+# http_proxy: ''
+# https_proxy: ''
+switch_to_new_perl: true
+use_profile: true

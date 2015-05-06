@@ -10,7 +10,6 @@
   - perlbrew
   tags: [ perlbrew, prereq ]
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
-    
 
 - yum: name='{{ item }}' state=present
   with_items:
@@ -19,7 +18,7 @@
   - make
   - bzip2
   - perl
-  when: ansible_distribution == 'CentOS' 
+  when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
 
 - name: Make PERLBREW_ROOT
   file: path='{{ perlbrew_root }}' owner='{{ perlbrew_user }}' mode=0755 state=directory
@@ -27,6 +26,9 @@
 
 - name: Download perlbrew install script
   get_url: url=https://gugod.github.io/App-perlbrew/perlbrew dest=/tmp/perlbrew-installer-{{ perlbrew_user }} mode=0755
+  environment:
+    http_proxy: http_proxy
+    https_proxy: https_proxy
   tags: [ perlbrew ]
 
 - name: Install perlbrew
@@ -38,29 +40,79 @@
 
 - name: Install patchperl
   shell: PERLBREW_ROOT='{{ perlbrew_root }}' /usr/bin/perl /tmp/perlbrew-installer-{{ perlbrew_user }} -f -q install-patchperl creates="{{ perlbrew_root }}/bin/patchperl"
+  environment:
+    http_proxy: http_proxy
+    https_proxy: https_proxy
   tags: [ perlbrew ]
 
 - set_fact:
     perlbrew_bin: PERLBREW_ROOT={{ perlbrew_root }} {{ perlbrew_root}}/bin/perlbrew
   tags: [ perlbrew ]
 
+############################################################
+### Update .profile for the user or just leave it commented
+############################################################
+
 - name: Make sure .profile exists
   file: path=~{{ perlbrew_user }}/.profile state=touch owner={{ perlbrew_user }} mode=0644
 
-- name: Init ~/.bashrc
+- name: Init ~/.profile
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
   - { dest: '~{{ perlbrew_user }}/.profile', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
   - { dest: '~{{ perlbrew_user }}/.profile', line: 'source {{ perlbrew_root }}/etc/bashrc' }
-  tags: [ perlbrew ]
+  when: use_profile and switch_to_new_perl
+  tags: [ perlbrew, profile ]
+
+- name: Init ~/.profile
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
+  sudo_user: '{{ perlbrew_user }}'
+  lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
+  with_items:
+  - { dest: '~{{ perlbrew_user }}/.profile', line: '#export PERLBREW_ROOT={{ perlbrew_root }}' }
+  - { dest: '~{{ perlbrew_user }}/.profile', line: '#source {{ perlbrew_root }}/etc/bashrc' }
+  when: use_profile and not switch_to_new_perl
+  tags: [ perlbrew, profile ]
+
+###########################################################
+### Update .bashrc for the user or just leave it commented
+###########################################################
+
+- name: Make sure ~/.bashrc exists
+  file: path='~root/.bashrc' state=touch mode=0644 force=no
+
+- name: Init ~/.bashrc
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
+  sudo_user: '{{ perlbrew_user }}'
+  lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
+  with_items:
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '. {{ perlbrew_root }}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '. {{ perlbrew_root }}/etc/perlbrew-completion.bash' }
+  when: switch_to_new_perl and not use_profile
+  tags: [ perlbrew, bashrc ]
+
+- name: Init ~/.bashrc
+  sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
+  sudo_user: '{{ perlbrew_user }}'
+  lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
+  with_items:
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#export PERLBREW_ROOT={{ perlbrew_root }}' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#. {{ perlbrew_root }}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#. {{ perlbrew_root }}/etc/perlbrew-completion.bash' }
+  when: not switch_to_new_perl and not use_profile
+  tags: [ perlbrew, bashrc ]
 
 - name: Install Perl
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
-  shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }}  # creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
+  shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }} # creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
   register: perlbrew_build_output
+  environment:
+    http_proxy: http_proxy
+    https_proxy: https_proxy
   tags: [ perlbrew ]
 
 - fail: msg="Perlbrew could not build Perl. Check the build log"
@@ -70,10 +122,16 @@
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
   shell: "{{ perlbrew_bin }} install-cpanm creates='{{ perlbrew_root }}/bin/cpanm'"
+  environment:
+    http_proxy: http_proxy
+    https_proxy: https_proxy
   tags: [ perlbrew ]
+
+# If during a run you don't see the variable value it's because of a bug in Ansible 1.8 (see "Ansible Project" Google group)
 
 - name: Use Perl {{ perl_version }}
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
   shell: PERLBREW_BASHRC_VERSION=1 {{ perlbrew_bin }} switch {{ perl_version }}
+  when: switch_to_new_perl
   tags: [ perlbrew ]
