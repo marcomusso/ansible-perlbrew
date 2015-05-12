@@ -114,7 +114,7 @@
 - name: Install Perl
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
-  shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }} # creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
+  shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }} creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
   register: perlbrew_build_output
   environment:
     http_proxy: http_proxy
