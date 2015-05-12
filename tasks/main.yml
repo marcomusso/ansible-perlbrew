@@ -68,7 +68,7 @@
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
   - { dest: '~{{ perlbrew_user }}/.profile', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
-  - { dest: '~{{ perlbrew_user }}/.profile', line: 'source {{ perlbrew_root }}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.profile', line: 'source ${PERLBREW_ROOT}/etc/bashrc' }
   when: use_profile and switch_to_new_perl
   tags: [ perlbrew, profile ]
 
@@ -78,7 +78,7 @@
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
   - { dest: '~{{ perlbrew_user }}/.profile', line: '#export PERLBREW_ROOT={{ perlbrew_root }}' }
-  - { dest: '~{{ perlbrew_user }}/.profile', line: '#source {{ perlbrew_root }}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.profile', line: '#source ${PERLBREW_ROOT}/etc/bashrc' }
   when: use_profile and not switch_to_new_perl
   tags: [ perlbrew, profile ]
 
@@ -95,8 +95,8 @@
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
   - { dest: '~{{ perlbrew_user }}/.bashrc', line: 'export PERLBREW_ROOT={{ perlbrew_root }}' }
-  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '. {{ perlbrew_root }}/etc/bashrc' }
-  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '. {{ perlbrew_root }}/etc/perlbrew-completion.bash' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '. ${PERLBREW_ROOT}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '. ${PERLBREW_ROOT}/etc/perlbrew-completion.bash' }
   when: switch_to_new_perl and not use_profile
   tags: [ perlbrew, bashrc ]
 
@@ -106,8 +106,8 @@
   lineinfile: dest='{{ item.dest }}' line='{{ item.line }}'
   with_items:
   - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#export PERLBREW_ROOT={{ perlbrew_root }}' }
-  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#. {{ perlbrew_root }}/etc/bashrc' }
-  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#. {{ perlbrew_root }}/etc/perlbrew-completion.bash' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#. ${PERLBREW_ROOT}/etc/bashrc' }
+  - { dest: '~{{ perlbrew_user }}/.bashrc', line: '#. ${PERLBREW_ROOT}/etc/perlbrew-completion.bash' }
   when: not switch_to_new_perl and not use_profile
   tags: [ perlbrew, bashrc ]
 
