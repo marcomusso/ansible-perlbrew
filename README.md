@@ -20,21 +20,22 @@ Role Variables
 --------------
 
 * "perl_version" is used to specify the default perl version. Note: This
-  cannot be `latest`, but need to be something like `perl-5.20.2`. The default
+  cannot be `latest`, but need to be something like `perl-5.22.0`. The default
   will be changed to the latest stable.
 * "perlbrew_user" is used to specify which user on the remote system that will
   get perlbrew.
-* "http_proxy", "https_proxy" are used to access the internet through a proxy, default is undefined (disabled)
+* "http_proxy", "https_proxy", "no_proxy" are used to access the internet through a proxy, default is undefined (disabled)
 * "switch_to_new_perl" is used to activate (`perlbrew switch`) the new perl_version right away, default is `true` (if `false` added lines in `.profile`/`.bashrc` will be commented)
 * "use_profile" add export PERLBREW_ROOT and source perlbrew rc files to `.profile`, default is `true` (if false adds to `.bashrc`)
 
 Example config:
 
     ---
-    perl_version: perl-5.20.2
+    perl_version: perl-5.22.0
     perlbrew_user: www
     http_proxy: http://myproxy:5865
     https_proxy: http://myproxy:5865
+    no_proxy: 127.0.0.1,localhost,mySatelliteServer
     switch_to_new_perl: true
     use_profile: true
 
@@ -50,7 +51,7 @@ Including an example of how to use your role (for instance, with variables passe
 
     - hosts: servers
       roles:
-         - { role: jhthorsen.perlbrew, perlbrew_user: www, perl_version: perl-5.20.2 }
+         - { role: jhthorsen.perlbrew, perlbrew_user: www, perl_version: perl-5.22.0 }
 
 Another Example playbook
 ------------------------
