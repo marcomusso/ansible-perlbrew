@@ -1,4 +1,5 @@
 ---
+
 - name: Package prerequisites
   apt: name='{{ item }}' state=present
   with_items:
@@ -11,10 +12,12 @@
   environment:
     http_proxy: http_proxy
     https_proxy: https_proxy
+    no_proxy: no_proxy
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   tags: [ perlbrew, prereq ]
 
-- yum: name='{{ item }}' state=present
+- name: Package prerequisites
+  yum: name='{{ item }}' state=present
   with_items:
   - curl
   - gcc
@@ -24,6 +27,7 @@
   environment:
     http_proxy: http_proxy
     https_proxy: https_proxy
+    no_proxy: no_proxy
   when: ansible_distribution == 'CentOS' or ansible_distribution == 'RedHat'
 
 - name: Make PERLBREW_ROOT
@@ -35,6 +39,7 @@
   environment:
     http_proxy: http_proxy
     https_proxy: https_proxy
+    no_proxy: no_proxy
   tags: [ perlbrew ]
 
 - name: Install perlbrew
@@ -49,6 +54,7 @@
   environment:
     http_proxy: http_proxy
     https_proxy: https_proxy
+    no_proxy: no_proxy
   tags: [ perlbrew ]
 
 - set_fact:
@@ -119,6 +125,7 @@
   environment:
     http_proxy: http_proxy
     https_proxy: https_proxy
+    no_proxy: no_proxy
   tags: [ perlbrew ]
 
 - fail: msg="Perlbrew could not build Perl. Check the build log"
@@ -131,6 +138,7 @@
   environment:
     http_proxy: http_proxy
     https_proxy: https_proxy
+    no_proxy: no_proxy
   tags: [ perlbrew ]
 
 # If during a run you don't see the variable value it's because of a bug in Ansible 1.8 (see "Ansible Project" Google group)
