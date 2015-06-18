@@ -117,7 +117,7 @@
   when: not switch_to_new_perl and not use_profile
   tags: [ perlbrew, bashrc ]
 
-- name: Install Perl
+- name: Install Perl (may take some time...)
   sudo: "{{ ansible_user_id == 'root' ? 'yes' : 'no' }}"
   sudo_user: '{{ perlbrew_user }}'
   shell: "{{ perlbrew_bin }} install --verbose {{ perl_version }} creates='{{ perlbrew_root }}/perls/{{ perl_version }}'"
@@ -128,7 +128,8 @@
     no_proxy: no_proxy
   tags: [ perlbrew ]
 
-- fail: msg="Perlbrew could not build Perl. Check the build log"
+- name: Fail if Perl not installed correctly
+  fail: msg="Perlbrew could not build Perl. Check the build log"
   when: "perlbrew_build_output.changed == True and  perl_version + ' is successfully installed.' not in perlbrew_build_output.stdout_lines"
 
 - name: Install cpanm
